@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent GitHub Scanner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+  --accent:#58a6ff;--purple:#a855f7;--green:#3fb950;--yellow:#e3b341;
+  --red:#f85149;--orange:#f0883e;--text:#e6edf3;--muted:#7d8590;
+  color-scheme:light dark;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;min-height:100vh}
+
+/* ── HEADER ── */
+.header{
+  background:linear-gradient(160deg,#0d1117 0%,#111827 60%,#0d1117 100%);
+  border-bottom:1px solid var(--border);padding:34px 24px 0;text-align:center;
+  position:relative;overflow:hidden
+}
+.header::before{
+  content:'';position:absolute;inset:-60%;
+  background:radial-gradient(ellipse at 50% 35%,rgba(88,166,255,.07) 0%,transparent 60%);
+  pointer-events:none
+}
+.logo{font-size:2.1rem;font-weight:800;position:relative;
+  background:linear-gradient(135deg,#58a6ff,#a855f7);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.sub{color:var(--muted);font-size:.88rem;margin-bottom:20px;position:relative}
+
+/* ── MODE SWITCHER ── */
+.mode-switcher{
+  display:inline-flex;background:var(--surface2);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;margin-bottom:20px;position:relative
+}
+.mode-btn{
+  padding:11px 28px;border:none;background:none;color:var(--muted);
+  cursor:pointer;font-size:.88rem;font-weight:500;transition:all .22s;
+  display:flex;align-items:center;gap:8px;white-space:nowrap
+}
+.mode-btn.active{
+  background:linear-gradient(135deg,#1d4ed8,#7c3aed);
+  color:#fff;border-radius:12px;margin:3px
+}
+.mode-btn:not(.active):hover{color:var(--text)}
+
+.controls{display:flex;justify-content:center;gap:10px;padding-bottom:22px;flex-wrap:wrap;position:relative}
+.btn{
+  padding:8px 20px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);cursor:pointer;font-size:.84rem;
+  font-weight:500;transition:all .2s
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.pri{background:linear-gradient(135deg,#1d4ed8,#7c3aed);border-color:transparent;color:#fff}
+.btn.pri:hover{opacity:.85}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── CONTAINER ── */
+.container{max-width:980px;margin:0 auto;padding:24px}
+
+/* ── STATS BAR ── */
+.stats-bar{display:flex;gap:12px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
+.pill{
+  display:flex;align-items:center;gap:6px;padding:5px 14px;
+  border-radius:20px;background:var(--surface);border:1px solid var(--border);
+  font-size:.77rem;color:var(--muted)
+}
+.dot-live{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MODE BANNER ── */
+.mode-banner{
+  border-radius:12px;padding:14px 20px;margin-bottom:20px;
+  display:flex;align-items:center;gap:14px;font-size:.86rem
+}
+.mode-banner.stars{
+  background:linear-gradient(135deg,rgba(88,166,255,.08),rgba(88,166,255,.04));
+  border:1px solid rgba(88,166,255,.2)
+}
+.mode-banner.trending{
+  background:linear-gradient(135deg,rgba(240,136,62,.1),rgba(240,136,62,.04));
+  border:1px solid rgba(240,136,62,.25)
+}
+.mode-icon{font-size:1.8rem;flex-shrink:0}
+.mode-desc{line-height:1.5}
+.mode-desc strong{display:block;font-size:.95rem;margin-bottom:2px}
+
+/* ── LOADING ── */
+.loading-wrap{text-align:center;padding:72px 24px;color:var(--muted)}
+.spinner{
+  width:44px;height:44px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .75s linear infinite;margin:0 auto 16px
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog-wrap{background:var(--surface2);border-radius:20px;height:4px;
+  max-width:280px;margin:16px auto 0;overflow:hidden}
+.prog-bar{height:100%;border-radius:20px;transition:width .35s;
+  background:linear-gradient(90deg,#1d4ed8,#7c3aed)}
+
+/* ── CARDS ── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;margin-bottom:18px;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s
+}
+.card:hover{
+  border-color:rgba(88,166,255,.45);
+  box-shadow:0 4px 28px rgba(88,166,255,.07)
+}
+/* trending mode hover */
+.mode-trending .card:hover{border-color:rgba(240,136,62,.5);box-shadow:0 4px 28px rgba(240,136,62,.07)}
+
+.card-head{padding:20px 24px 14px;display:flex;align-items:flex-start;gap:14px}
+.rank{
+  min-width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.84rem;font-weight:700;color:#fff;flex-shrink:0;
+  background:linear-gradient(135deg,#1d4ed8,#7c3aed)
+}
+.rank.r1{background:linear-gradient(135deg,#b45309,#f59e0b)}
+.rank.r2{background:linear-gradient(135deg,#4b5563,#9ca3af)}
+.rank.r3{background:linear-gradient(135deg,#7c3d12,#c2410c)}
+
+/* velocity badge for trending mode */
+.vel-badge{
+  background:linear-gradient(135deg,rgba(240,136,62,.15),rgba(240,136,62,.08));
+  border:1px solid rgba(240,136,62,.35);color:var(--orange);
+  border-radius:8px;padding:6px 12px;text-align:center;flex-shrink:0
+}
+.vel-badge .vel-num{font-size:1.1rem;font-weight:700;display:block}
+.vel-badge .vel-lbl{font-size:.62rem;color:var(--muted);white-space:nowrap}
+
+.card-body{flex:1;min-width:0}
+.repo-link{font-size:1.05rem;font-weight:600;color:var(--accent);text-decoration:none;display:block;margin-bottom:4px}
+.repo-link:hover{text-decoration:underline}
+.repo-desc{color:var(--muted);font-size:.85rem;line-height:1.55;margin-bottom:11px}
+
+.meta{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.mi{display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--muted)}
+.sc{color:var(--yellow);font-weight:700;font-size:.9rem}
+.new-badge{
+  background:rgba(63,185,80,.12);color:var(--green);
+  border:1px solid rgba(63,185,80,.3);border-radius:10px;
+  padding:1px 9px;font-size:.72rem;font-weight:600
+}
+.lang-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.topic{
+  background:rgba(88,166,255,.09);color:var(--accent);
+  border:1px solid rgba(88,166,255,.22);
+  padding:2px 9px;border-radius:12px;font-size:.72rem
+}
+
+/* ── TABS ── */
+.tabs-wrap{border-top:1px solid var(--border)}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{
+  padding:10px 18px;border:none;background:none;
+  color:var(--muted);cursor:pointer;font-size:.81rem;
+  white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s
+}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--text)}
+.pane{padding:18px 24px;display:none;font-size:.86rem;line-height:1.75;color:var(--text)}
+.pane.on{display:block}
+.pane p+p{margin-top:10px}
+
+.mini-spin{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .75s linear infinite;
+  vertical-align:middle;margin-right:8px
+}
+.load-lbl{color:var(--muted);font-size:.83rem}
+
+/* ── BIZ GRID ── */
+.biz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:11px;margin-top:4px}
+.biz-tile{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.biz-tile h4{font-size:.79rem;color:var(--accent);margin-bottom:4px;font-weight:600}
+.biz-tile p{font-size:.76rem;color:var(--muted);line-height:1.5}
+.biz-lbl{
+  display:inline-block;font-size:.67rem;padding:1px 8px;border-radius:8px;
+  margin-bottom:5px;font-weight:600
+}
+.hot{background:rgba(248,81,73,.14);color:#f98080}
+.growth{background:rgba(63,185,80,.14);color:var(--green)}
+.enterprise{background:rgba(88,166,255,.14);color:var(--accent)}
+.emerging{background:rgba(168,85,247,.14);color:var(--purple)}
+
+/* ── STATS GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:11px}
+.sg{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.sg-lbl{font-size:.74rem;color:var(--muted);margin-bottom:4px}
+.sg-val{font-size:1.05rem;font-weight:700}
+
+/* ── ERROR ── */
+.err{
+  background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.3);
+  border-radius:10px;padding:20px 24px;text-align:center;color:var(--red)
+}
+.err a{color:var(--accent)}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:28px 24px;color:var(--muted);font-size:.76rem;border-top:1px solid var(--border)}
+footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🤖 AI Agent GitHub Scanner</div>
+  <p class="sub">Real-time tracking of top AI Agent projects · Powered by GitHub Search API</p>
+
+  <!-- Mode switcher -->
+  <div>
+    <div class="mode-switcher">
+      <button class="mode-btn active" id="modeStarsBtn" onclick="setMode('stars')">
+        🏆 Most Stars (All-time Top 10)
+      </button>
+      <button class="mode-btn" id="modeTrendBtn" onclick="setMode('trending')">
+        🔥 Trending Today (Stars Added)
+      </button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn pri" id="refreshBtn" onclick="fetchRepos()">🔄 Refresh</button>
+    <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
+  </div>
+</div>
+
+<div class="container" id="mainContainer">
+
+  <!-- Stats bar -->
+  <div class="stats-bar" id="statsBar" style="display:none">
+    <div class="pill"><span class="dot-live"></span><span id="fetchTime">Loaded</span></div>
+    <div class="pill">📅 <span id="dateLabel">—</span></div>
+    <div class="pill">⭐ <span id="starTotal">—</span></div>
+    <div class="pill" id="velPill" style="display:none">⚡ <span id="velAvg">—</span></div>
+    <div class="pill">🔢 <span id="repoCount">—</span></div>
+  </div>
+
+  <!-- Mode banner -->
+  <div class="mode-banner stars" id="modeBanner">
+    <span class="mode-icon">🏆</span>
+    <div class="mode-desc">
+      <strong>Most Stars — All-time Top 10</strong>
+      AI Agent projects with the highest total stars that were actively pushed to since yesterday.
+      These are the most trusted, battle-tested repositories in the ecosystem.
+    </div>
+  </div>
+
+  <div id="content">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <p>Scanning GitHub for top AI Agent projects…</p>
+      <p style="font-size:.8rem;margin-top:6px">Fetching repositories, stars, and metadata</p>
+      <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Data from <a href="https://docs.github.com/en/rest/search" target="_blank">GitHub Search API</a> ·
+  Stars/day velocity = total stars ÷ days since creation ·
+  Introductions &amp; business predictions generated algorithmically ·
+  Built with ❤️ by Claude
+</footer>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let currentMode = 'stars';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeStarsBtn').classList.toggle('active', mode === 'stars');
+  document.getElementById('modeTrendBtn').classList.toggle('active', mode === 'trending');
+  document.getElementById('mainContainer').className = 'container' + (mode === 'trending' ? ' mode-trending' : '');
+
+  const banner = document.getElementById('modeBanner');
+  if (mode === 'trending') {
+    banner.className = 'mode-banner trending';
+    banner.innerHTML = `<span class="mode-icon">🔥</span>
+      <div class="mode-desc">
+        <strong>Trending Today — Most Stars Added</strong>
+        AI Agent repos created in the last 7 days, sorted by total stars gained.
+        The <strong>⚡ stars/day</strong> velocity shows how fast each project is growing right now.
+      </div>`;
+    document.getElementById('velPill').style.display = 'flex';
+  } else {
+    banner.className = 'mode-banner stars';
+    banner.innerHTML = `<span class="mode-icon">🏆</span>
+      <div class="mode-desc">
+        <strong>Most Stars — All-time Top 10</strong>
+        AI Agent projects with the highest total stars that were actively pushed to since yesterday.
+        These are the most trusted, battle-tested repositories in the ecosystem.
+      </div>`;
+    document.getElementById('velPill').style.display = 'none';
+  }
+  fetchRepos();
+}
+
+// ── Language colours ─────────────────────────────────────────────────────────
+const LANG_COLOR = {
+  Python:'#3572A5',JavaScript:'#f1e05a',TypeScript:'#3178c6',Go:'#00ADD8',
+  Rust:'#dea584',Java:'#b07219','C++':'#f34b7d',Ruby:'#701516',PHP:'#4F5D95',
+  Swift:'#F05138',Kotlin:'#A97BFF',Shell:'#89e051','C#':'#178600',C:'#555555',
+  Dockerfile:'#384d54','Jupyter Notebook':'#DA5B0B',Scala:'#c22d40',Elixir:'#6e4a7e'
+};
+
+// ── Business prediction engine ────────────────────────────────────────────────
+const BIZ_KB = [
+  { id:'devtools',
+    kw:['code','coding','developer','ide','programming','devops','debug','test','github','git','ci','deploy','refactor','lint','cursor','copilot'],
+    tiles:[
+      {tag:'enterprise',name:'DevTool Companies',desc:'GitHub, JetBrains, Cursor — embed as an intelligent coding assistant that understands entire codebases.'},
+      {tag:'growth',name:'Enterprise IT Depts',desc:'Automate code reviews, security scanning, and deployment pipelines to reduce engineering overhead.'},
+      {tag:'hot',name:'EdTech Platforms',desc:'Provide learners with real-time, personalised coding mentorship at massive scale.'},
+      {tag:'emerging',name:'No-Code/Low-Code Vendors',desc:'Allow non-technical users to generate and modify application logic through natural language.'}
+    ]
+  },
+  { id:'customer',
+    kw:['customer','support','service','chat','helpdesk','ticket','crm','sales','marketing','conversational','chatbot','voice'],
+    tiles:[
+      {tag:'hot',name:'E-commerce Brands',desc:'Deploy 24/7 autonomous support agents for order tracking, returns, and product FAQs — cutting resolution time by 80%.'},
+      {tag:'enterprise',name:'Telecom & Financial Services',desc:'Handle billing inquiries, account management, and compliance-aware advice without human agents.'},
+      {tag:'growth',name:'SaaS Companies',desc:'Automate tier-1 support tickets, surface contextual docs, and escalate complex issues intelligently.'},
+      {tag:'emerging',name:'Healthcare Providers',desc:'Power patient intake, appointment scheduling, and symptom-checking agents with safety guardrails.'}
+    ]
+  },
+  { id:'data',
+    kw:['data','analytics','database','sql','etl','pipeline','warehouse','bi','dashboard','report','insight','metric','pandas','spark','postgres'],
+    tiles:[
+      {tag:'enterprise',name:'Data Analytics Firms',desc:'Build self-service BI agents that write SQL, generate charts, and surface insights from natural-language questions.'},
+      {tag:'hot',name:'Healthcare & Life Sciences',desc:'Analyse patient records, clinical trial data, and genomics datasets to surface actionable research findings.'},
+      {tag:'growth',name:'Retail & CPG Companies',desc:'Automate demand forecasting, shelf-space optimisation, and supplier performance reporting.'},
+      {tag:'enterprise',name:'Financial Institutions',desc:'Generate regulatory reports, audit trails, and real-time risk dashboards automatically.'}
+    ]
+  },
+  { id:'research',
+    kw:['research','search','web','browse','crawl','scrape','knowledge','rag','retrieval','document','pdf','summariz','arxiv','paper','news'],
+    tiles:[
+      {tag:'enterprise',name:'Law Firms & LegalTech',desc:'Automate case research, contract review, and due diligence — slashing hours of manual work per matter.'},
+      {tag:'hot',name:'Investment Banks & Hedge Funds',desc:'Scan SEC filings, earnings calls, and market news to generate actionable investment memos in seconds.'},
+      {tag:'growth',name:'Pharmaceutical Companies',desc:'Accelerate drug discovery by scanning and synthesising thousands of research papers automatically.'},
+      {tag:'emerging',name:'Media & Publishing',desc:'Power AI fact-checkers, research assistants, and SEO content pipelines at editorial scale.'}
+    ]
+  },
+  { id:'automation',
+    kw:['automat','workflow','orchestrat','pipeline','task','multi-agent','tool','action','rpa','process','schedule','trigger','n8n','zapier','agentic'],
+    tiles:[
+      {tag:'hot',name:'Business Process Outsourcing',desc:'Replace repetitive back-office tasks (data entry, reconciliation, reporting) with always-on autonomous agents.'},
+      {tag:'enterprise',name:'Manufacturing & Logistics',desc:'Automate quality control, production scheduling, and supply-chain exception handling end-to-end.'},
+      {tag:'growth',name:'HR & Talent Acquisition',desc:'Screen CVs, schedule interviews, send offer letters, and onboard employees — fully automated.'},
+      {tag:'emerging',name:'Insurance Companies',desc:'Streamline claims intake, fraud detection, policy underwriting, and renewal workflows.'}
+    ]
+  },
+  { id:'infra',
+    kw:['infra','cloud','kubernetes','docker','server','api','microservice','monitor','llm','model','openai','claude','gemini','framework','sdk','langchain','llamaindex','mcp'],
+    tiles:[
+      {tag:'enterprise',name:'Cloud Platform Providers',desc:'Offer managed AI-agent infrastructure with built-in observability, scaling, and cost controls.'},
+      {tag:'hot',name:'AI-Native Startups',desc:'Use as the foundational orchestration layer to ship specialised vertical AI agents faster.'},
+      {tag:'growth',name:'System Integrators',desc:'Connect legacy enterprise systems to modern AI capabilities without full re-platforming.'},
+      {tag:'emerging',name:'Cybersecurity Firms',desc:'Deploy autonomous agents for continuous threat monitoring, CVE triage, and incident response.'}
+    ]
+  },
+  { id:'creative',
+    kw:['image','video','audio','music','art','design','creative','generate','stable diffusion','midjourney','content','media','multimodal'],
+    tiles:[
+      {tag:'hot',name:'Creative Agencies',desc:'Automate first-draft creative production — copy, images, video scripts — at a fraction of current cost.'},
+      {tag:'growth',name:'Game Studios',desc:'Generate procedural game content, NPC dialogue, and in-game assets autonomously.'},
+      {tag:'enterprise',name:'Marketing Platforms',desc:'Personalise ad creatives, landing pages, and email campaigns at 1:1 scale.'},
+      {tag:'emerging',name:'EdTech & E-learning',desc:'Produce interactive learning materials, simulations, and assessments automatically.'}
+    ]
+  }
+];
+
+function predictBiz(repo) {
+  const text = [repo.name, repo.description||'', ...(repo.topics||[])].join(' ').toLowerCase();
+  const scored = BIZ_KB.map(kb => ({ ...kb, score: kb.kw.filter(k => text.includes(k)).length }))
+    .sort((a,b) => b.score - a.score);
+  const top2 = scored.slice(0,2).filter(e => e.score > 0);
+  if (!top2.length) return BIZ_KB[4].tiles;
+  const out = [];
+  top2.forEach(cat => out.push(...cat.tiles.slice(0,2)));
+  return out.slice(0,4);
+}
+
+// ── Velocity helpers ─────────────────────────────────────────────────────────
+function daysSince(dateStr) {
+  return Math.max(1, (Date.now() - new Date(dateStr)) / 86400000);
+}
+function velocity(repo) {
+  return Math.round(repo.stargazers_count / daysSince(repo.created_at));
+}
+
+// ── Intro builder ─────────────────────────────────────────────────────────────
+function buildIntro(repo, mode) {
+  const lang   = repo.language || 'multiple languages';
+  const stars  = repo.stargazers_count.toLocaleString();
+  const forks  = repo.forks_count.toLocaleString();
+  const watch  = repo.watchers_count.toLocaleString();
+  const created= new Date(repo.created_at).toLocaleDateString('en-US',{year:'numeric',month:'long'});
+  const pushed = new Date(repo.pushed_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const topics = (repo.topics||[]).slice(0,6).join(', ') || 'AI, autonomous agents';
+  const desc   = repo.description || 'an innovative AI agent project';
+  const owner  = repo.owner?.type==='Organization'
+    ? `the <strong>${repo.owner.login}</strong> organization`
+    : `<strong>${repo.owner?.login||'the community'}</strong>`;
+  const health = repo.open_issues_count < 20 ? 'very responsive, with issues resolved quickly'
+    : repo.open_issues_count < 100 ? 'actively maintained'
+    : 'large and widely used, with a busy issue tracker';
+  const vel    = velocity(repo);
+  const velLine= mode === 'trending'
+    ? `<p>At <strong>⚡ ${vel.toLocaleString()} stars/day</strong>, this is one of the fastest-growing AI agent projects right now — all of its ${stars} stars have been earned in just ${Math.round(daysSince(repo.created_at))} days, a strong signal of viral developer interest.</p>`
+    : '';
+  const readmeBlock = repo._readme
+    ? `<p style="margin-top:14px;padding:12px 16px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-style:italic;color:var(--muted)">"${repo._readme}"</p>`
+    : '';
+  return `
+<p><strong>${esc(repo.name)}</strong> — hosted at <strong>${esc(repo.full_name)}</strong> — ${esc(desc).charAt(0).toLowerCase()+esc(desc).slice(1)}${desc.endsWith('.')?'':'.'}
+Maintained by ${owner}, the project launched in <strong>${created}</strong> and last received updates on <strong>${pushed}</strong>,
+signalling a <strong>${health}</strong> developer community.</p>
+
+<p>With <strong>${stars} GitHub stars</strong>, <strong>${forks} forks</strong>, and <strong>${watch} watchers</strong>,
+it is a standout repository in the AI agent ecosystem.
+The codebase is written primarily in <strong>${lang}</strong> and covers topics including <em>${esc(topics)}</em> —
+making it relevant across agentic AI use cases: autonomous task execution,
+multi-agent orchestration, tool-calling, memory, and long-horizon planning.</p>
+
+${velLine}
+${readmeBlock}
+
+<p>The project's momentum reflects the industry-wide shift from single-turn LLM calls
+toward full agentic systems that can plan, act, and self-correct.
+<strong>${esc(repo.name)}</strong> is a production-tested foundation that both indie developers
+and enterprise teams can build on immediately.</p>`.trim();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt(n) { return n >= 1000 ? (n/1000).toFixed(1)+'k' : n; }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function tagLabel(t) { return {hot:'Hot 🔥',growth:'Growth 📈',enterprise:'Enterprise 🏢',emerging:'Emerging 🚀'}[t]||t; }
+
+// ── Card renderer ─────────────────────────────────────────────────────────────
+function renderCard(repo, i, mode) {
+  const rc   = i===0?'r1':i===1?'r2':i===2?'r3':'';
+  const lc   = LANG_COLOR[repo.language]||'#8b949e';
+  const biz  = predictBiz(repo);
+  const id   = `c${i}`;
+  const vel  = velocity(repo);
+  const days = Math.round(daysSince(repo.created_at));
+  const topics = (repo.topics||[]).slice(0,5).map(t=>`<span class="topic">${esc(t)}</span>`).join('');
+  const isNew = days <= 30;
+
+  const velBadge = mode === 'trending'
+    ? `<div class="vel-badge"><span class="vel-num">⚡ ${vel.toLocaleString()}</span><span class="vel-lbl">stars/day</span></div>`
+    : '';
+
+  return `
+<div class="card" id="${id}">
+  <div class="card-head">
+    <div class="rank ${rc}">#${i+1}</div>
+    <div class="card-body">
+      <a class="repo-link" href="${repo.html_url}" target="_blank" rel="noopener">${esc(repo.full_name)}</a>
+      <p class="repo-desc">${esc(repo.description)||'<em style="color:var(--muted)">No description provided.</em>'}</p>
+      <div class="meta">
+        <span class="mi sc">⭐ ${fmt(repo.stargazers_count)}</span>
+        <span class="mi">🍴 ${fmt(repo.forks_count)}</span>
+        <span class="mi">👁 ${fmt(repo.watchers_count)}</span>
+        ${repo.language?`<span class="mi"><span class="lang-dot" style="background:${lc}"></span>${esc(repo.language)}</span>`:''}
+        ${isNew?`<span class="new-badge">✨ ${days}d old</span>`:''}
+        <span class="mi">🔄 ${new Date(repo.pushed_at).toLocaleDateString()}</span>
+        ${topics}
+      </div>
+    </div>
+    ${velBadge}
+  </div>
+  <div class="tabs-wrap">
+    <div class="tab-bar">
+      <button class="tab on"  onclick="showTab('${id}','intro',this)">📖 Introduction</button>
+      <button class="tab"     onclick="showTab('${id}','biz',this)">💼 Business Use Cases</button>
+      <button class="tab"     onclick="showTab('${id}','stats',this)">📊 Quick Stats</button>
+    </div>
+    <div class="pane on" id="${id}-intro">
+      <span class="mini-spin"></span><span class="load-lbl">Generating introduction…</span>
+    </div>
+    <div class="pane" id="${id}-biz">
+      <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">
+        Industries &amp; companies that could leverage <strong>${esc(repo.name)}</strong>:
+      </p>
+      <div class="biz-grid">
+        ${biz.map(b=>`<div class="biz-tile">
+          <span class="biz-lbl ${b.tag}">${tagLabel(b.tag)}</span>
+          <h4>${esc(b.name)}</h4><p>${esc(b.desc)}</p>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="pane" id="${id}-stats">
+      <div class="stat-grid">
+        ${sg('⭐ Stars', repo.stargazers_count.toLocaleString(), 'var(--yellow)')}
+        ${sg('🍴 Forks', repo.forks_count.toLocaleString(), 'var(--accent)')}
+        ${sg('👁 Watchers', repo.watchers_count.toLocaleString(), 'var(--purple)')}
+        ${sg('🐛 Open Issues', repo.open_issues_count.toLocaleString(), 'var(--red)')}
+        ${mode==='trending'?sg('⚡ Stars/day', vel.toLocaleString(), 'var(--orange)'):''}
+        ${mode==='trending'?sg('📅 Age', days+'d', 'var(--green)'):''}
+        ${sg('📅 Created', new Date(repo.created_at).toLocaleDateString(), 'var(--green)')}
+        ${sg('🔄 Last Push', new Date(repo.pushed_at).toLocaleDateString(), 'var(--yellow)')}
+        ${sg('🔤 Language', repo.language||'—', 'var(--muted)')}
+        ${sg('📜 License', repo.license?.name||'None', 'var(--muted)')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function sg(label, val, color) {
+  return `<div class="sg"><div class="sg-lbl">${label}</div><div class="sg-val" style="color:${color}">${val}</div></div>`;
+}
+
+function showTab(id, pane, btn) {
+  document.querySelectorAll(`#${id} .pane`).forEach(p => p.classList.remove('on'));
+  document.querySelectorAll(`#${id} .tab`).forEach(b => b.classList.remove('on'));
+  document.getElementById(`${id}-${pane}`).classList.add('on');
+  btn.classList.add('on');
+}
+
+// ── README fetcher ────────────────────────────────────────────────────────────
+async function fetchReadme(owner, name) {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${owner}/${name}/readme`,
+      { headers: { Accept: 'application/vnd.github.v3+json' } });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const raw = atob(d.content.replace(/\n/g,''));
+    const clean = raw
+      .replace(/!\[.*?\]\(.*?\)/g,'').replace(/\[([^\]]+)\]\(.*?\)/g,'$1')
+      .replace(/#{1,6}\s+/g,'').replace(/[`*_>#]/g,'')
+      .replace(/\n{2,}/g,' ').replace(/\s{2,}/g,' ').trim();
+    const e = clean.substring(0,350).trim();
+    return e.length > 80 ? e + (clean.length > 350 ? '…' : '') : null;
+  } catch { return null; }
+}
+
+async function populateIntro(repo, i, mode) {
+  const el = document.getElementById(`c${i}-intro`);
+  if (!el) return;
+  await new Promise(r => setTimeout(r, i * 250));
+  repo._readme = await fetchReadme(repo.owner?.login, repo.name);
+  el.innerHTML = buildIntro(repo, mode);
+}
+
+// ── Main fetch ────────────────────────────────────────────────────────────────
+async function fetchRepos() {
+  const content    = document.getElementById('content');
+  const statsBar   = document.getElementById('statsBar');
+  const refreshBtn = document.getElementById('refreshBtn');
+
+  refreshBtn.disabled = true;
+  refreshBtn.textContent = '⏳ Loading…';
+  statsBar.style.display = 'none';
+
+  content.innerHTML = `<div class="loading-wrap">
+    <div class="spinner"></div>
+    <p>${currentMode==='trending'?'Finding the fastest-rising AI Agent repos…':'Fetching top AI Agent projects by stars…'}</p>
+    <p style="font-size:.8rem;margin-top:6px;color:var(--muted)">Querying GitHub Search API…</p>
+    <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+  </div>`;
+
+  let pct = 0;
+  const timer = setInterval(() => {
+    pct = Math.min(pct + 5, 85);
+    const b = document.getElementById('prog');
+    if (b) b.style.width = pct + '%';
+  }, 110);
+
+  // Build query based on mode
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yStr = yesterday.toISOString().split('T')[0];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  const wStr = weekAgo.toISOString().split('T')[0];
+
+  let q, dateLabel;
+  if (currentMode === 'trending') {
+    q = `ai agent OR llm-agent OR ai-agent OR autonomous-agent created:>=${wStr}`;
+    dateLabel = `Created since ${wStr} (last 7 days)`;
+  } else {
+    q = `ai agent OR llm-agent OR ai-agent OR autonomous-agent pushed:>=${yStr}`;
+    dateLabel = `Active since ${yStr}`;
+  }
+
+  const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(q)}&sort=stars&order=desc&per_page=10`;
+
+  try {
+    const resp = await fetch(url, { headers: { Accept: 'application/vnd.github.v3+json' } });
+    clearInterval(timer);
+
+    if (resp.status === 403 || resp.status === 429) {
+      const reset = resp.headers.get('X-RateLimit-Reset');
+      const rt = reset ? new Date(parseInt(reset)*1000).toLocaleTimeString() : 'a few minutes';
+      content.innerHTML = `<div class="err">
+        ⚠️ <strong>GitHub API rate limit reached</strong> (60 requests/hour unauthenticated)<br><br>
+        Rate limit resets at <strong>${rt}</strong>. Please wait and try again.<br><br>
+        <small>Signing into GitHub in this browser can increase your limit.</small>
+      </div>`;
+      refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+      return;
+    }
+    if (!resp.ok) throw new Error(`GitHub API returned ${resp.status}`);
+
+    const data = await resp.json();
+    const repos = (data.items || []).slice(0, 10);
+
+    if (!repos.length) {
+      content.innerHTML = `<div class="err">No results found. Try refreshing in a moment.</div>`;
+      refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+      return;
+    }
+
+    // Sort trending by velocity (stars/day) instead of raw stars
+    if (currentMode === 'trending') {
+      repos.sort((a, b) => velocity(b) - velocity(a));
+    }
+
+    content.innerHTML = repos.map((r,i) => renderCard(r, i, currentMode)).join('');
+
+    // Stats bar
+    const totalStars = repos.reduce((s,r) => s + r.stargazers_count, 0);
+    const avgVel = Math.round(repos.reduce((s,r) => s + velocity(r), 0) / repos.length);
+    document.getElementById('fetchTime').textContent = 'Fetched ' + new Date().toLocaleTimeString();
+    document.getElementById('dateLabel').textContent = dateLabel;
+    document.getElementById('starTotal').textContent = totalStars.toLocaleString() + ' total stars';
+    document.getElementById('repoCount').textContent = (data.total_count||0).toLocaleString() + ' matching repos';
+    if (currentMode === 'trending') {
+      document.getElementById('velAvg').textContent = 'avg ' + avgVel.toLocaleString() + ' stars/day';
+    }
+    statsBar.style.display = 'flex';
+    document.getElementById('velPill').style.display = currentMode === 'trending' ? 'flex' : 'none';
+
+    refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+
+    // Async intro + README population
+    repos.forEach((repo, i) => populateIntro(repo, i, currentMode));
+
+  } catch (err) {
+    clearInterval(timer);
+    content.innerHTML = `<div class="err">
+      ⚠️ <strong>Failed to load data</strong><br><br>
+      ${esc(err.message)}<br><br>
+      Check your connection, then <a href="#" onclick="fetchRepos();return false">try again</a>.
+    </div>`;
+    refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+  }
+}
+
+// Auto-start
+fetchRepos();
+</script>
+</body>
+</html>
