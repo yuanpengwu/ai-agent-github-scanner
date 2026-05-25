@@ -83,6 +83,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   background:linear-gradient(135deg,rgba(240,136,62,.1),rgba(240,136,62,.04));
   border:1px solid rgba(240,136,62,.25)
 }
+.mode-banner.kickstarter{
+  background:linear-gradient(135deg,rgba(5,209,130,.09),rgba(5,209,130,.04));
+  border:1px solid rgba(5,209,130,.28)
+}
 .mode-icon{font-size:1.8rem;flex-shrink:0}
 .mode-desc{line-height:1.5}
 .mode-desc strong{display:block;font-size:.95rem;margin-bottom:2px}
@@ -112,6 +116,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 }
 /* trending mode hover */
 .mode-trending .card:hover{border-color:rgba(240,136,62,.5);box-shadow:0 4px 28px rgba(240,136,62,.07)}
+/* kickstarter mode hover */
+.mode-ks .card:hover{border-color:rgba(5,209,130,.5);box-shadow:0 4px 28px rgba(5,209,130,.07)}
 
 .card-head{padding:20px 24px 14px;display:flex;align-items:flex-start;gap:14px}
 .rank{
@@ -195,6 +201,17 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .sg-lbl{font-size:.74rem;color:var(--muted);margin-bottom:4px}
 .sg-val{font-size:1.05rem;font-weight:700}
 
+/* ── KICKSTARTER PLEDGE BAR ── */
+.pledge-wrap{margin:10px 0 4px;background:var(--surface2);border-radius:20px;height:5px;overflow:hidden}
+.pledge-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,#05d182,#00a86b);transition:width .5s}
+.ks-meta{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:7px}
+.ks-badge{
+  padding:2px 10px;border-radius:10px;font-size:.72rem;font-weight:600;
+  background:rgba(5,209,130,.12);color:#05d182;border:1px solid rgba(5,209,130,.3)
+}
+.ks-badge.ended{background:rgba(125,133,144,.12);color:var(--muted);border-color:var(--border)}
+.pct-funded{font-size:1.05rem;font-weight:700;color:#05d182}
+
 /* ── ERROR ── */
 .err{
   background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.3);
@@ -205,6 +222,126 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 /* ── FOOTER ── */
 footer{text-align:center;padding:28px 24px;color:var(--muted);font-size:.76rem;border-top:1px solid var(--border)}
 footer a{color:var(--accent);text-decoration:none}
+
+/* ── READ MORE ── */
+.read-more-btn{
+  display:none;width:100%;padding:9px 14px;margin-top:6px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--accent);cursor:pointer;font-size:.8rem;font-weight:500;
+  text-align:center;transition:all .2s
+}
+.read-more-btn:hover{border-color:var(--accent)}
+.intro-text{position:relative}
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  /* Header */
+  .header{padding:24px 16px 0}
+  .logo{font-size:1.5rem}
+  .sub{font-size:.8rem;margin-bottom:14px}
+
+  /* Mode switcher: stack vertically */
+  .mode-switcher{
+    display:flex;flex-direction:column;width:calc(100% - 32px);
+    border-radius:12px;margin-bottom:14px
+  }
+  .mode-btn{
+    padding:13px 16px;font-size:.84rem;justify-content:center;
+    white-space:normal;text-align:center
+  }
+  .mode-btn.active{margin:3px 3px}
+
+  /* Controls */
+  .controls{gap:8px;padding-bottom:16px}
+  .btn{padding:10px 18px;font-size:.83rem;min-height:42px}
+
+  /* Container */
+  .container{padding:14px}
+
+  /* Stats bar: scroll horizontally */
+  .stats-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;gap:8px;margin-bottom:14px}
+  .stats-bar::-webkit-scrollbar{height:3px}
+  .stats-bar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .pill{flex-shrink:0;font-size:.73rem;padding:5px 11px}
+
+  /* Mode banner */
+  .mode-banner{padding:12px 14px;gap:10px;font-size:.82rem;margin-bottom:14px}
+  .mode-icon{font-size:1.4rem}
+  .mode-desc strong{font-size:.88rem}
+
+  /* Card header: stack rank + body + vel-badge */
+  .card-head{padding:14px 14px 12px;gap:10px;flex-wrap:wrap}
+  .rank{min-width:32px;height:32px;font-size:.78rem;border-radius:8px}
+
+  /* Velocity badge moves below body on mobile */
+  .vel-badge{order:3;flex:0 0 auto;width:100%;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:8px 12px;border-radius:8px;margin-top:2px}
+  .vel-badge .vel-num{font-size:1rem;display:inline}
+  .vel-badge .vel-lbl{font-size:.72rem}
+
+  .card-body{flex:1;min-width:0}
+  .repo-link{font-size:.95rem}
+  .repo-desc{font-size:.82rem;margin-bottom:8px}
+
+  /* Meta row: tighter */
+  .meta{gap:7px}
+  .mi{font-size:.75rem}
+  .sc{font-size:.85rem}
+  .topic{font-size:.69rem;padding:2px 7px}
+  .new-badge{font-size:.69rem}
+
+  /* Tabs: equal-width, touch-friendly */
+  .tab-bar{display:grid;grid-template-columns:repeat(3,1fr)}
+  .tab{padding:11px 4px;font-size:.75rem;text-align:center;white-space:normal;line-height:1.3}
+
+  /* Pane */
+  .pane{padding:14px}
+  .pane p{font-size:.83rem;line-height:1.65}
+
+  /* Biz grid: single column */
+  .biz-grid{grid-template-columns:1fr;gap:9px}
+  .biz-tile{padding:11px 13px}
+  .biz-tile h4{font-size:.78rem}
+  .biz-tile p{font-size:.75rem}
+
+  /* Stats grid: 2-col */
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:9px}
+  .sg{padding:11px 12px}
+  .sg-lbl{font-size:.71rem}
+  .sg-val{font-size:.95rem}
+
+  /* Intro text */
+  .pane strong{word-break:break-word}
+
+  footer{padding:20px 14px;font-size:.72rem}
+
+  /* Hide secondary meta items on mobile */
+  .hide-m{display:none!important}
+
+  /* Tabs: swap full labels for short labels via data-short attribute */
+  .tab{font-size:0}
+  .tab::before{content:attr(data-short);font-size:.75rem;line-height:1.3}
+
+  /* Collapsible intro */
+  .read-more-btn{display:block}
+  .intro-text.intro-collapse{max-height:120px;overflow:hidden}
+  .intro-text.intro-collapse::after{
+    content:'';position:absolute;bottom:0;left:0;right:0;height:50px;
+    background:linear-gradient(transparent,var(--surface));pointer-events:none
+  }
+  .intro-text.intro-expanded{max-height:none!important}
+  .intro-text.intro-expanded::after{display:none}
+}
+
+/* Very small phones */
+@media(max-width:380px){
+  .logo{font-size:1.25rem}
+  .mode-btn{font-size:.78rem;padding:11px 12px}
+  .tab{font-size:.7rem}
+  .stat-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -222,11 +359,14 @@ footer a{color:var(--accent);text-decoration:none}
       <button class="mode-btn" id="modeTrendBtn" onclick="setMode('trending')">
         🔥 Trending Today (Stars Added)
       </button>
+      <button class="mode-btn" id="modeKsBtn" onclick="setMode('kickstarter')">
+        🔬 Show HN — Daily Top 10
+      </button>
     </div>
   </div>
 
   <div class="controls">
-    <button class="btn pri" id="refreshBtn" onclick="fetchRepos()">🔄 Refresh</button>
+    <button class="btn pri" id="refreshBtn" onclick="fetchRepos(true)">🔄 Refresh</button>
     <button class="btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Top</button>
   </div>
 </div>
@@ -278,7 +418,10 @@ function setMode(mode) {
   currentMode = mode;
   document.getElementById('modeStarsBtn').classList.toggle('active', mode === 'stars');
   document.getElementById('modeTrendBtn').classList.toggle('active', mode === 'trending');
-  document.getElementById('mainContainer').className = 'container' + (mode === 'trending' ? ' mode-trending' : '');
+  document.getElementById('modeKsBtn').classList.toggle('active', mode === 'kickstarter');
+
+  const suffix = mode === 'trending' ? ' mode-trending' : mode === 'kickstarter' ? ' mode-ks' : '';
+  document.getElementById('mainContainer').className = 'container' + suffix;
 
   const banner = document.getElementById('modeBanner');
   if (mode === 'trending') {
@@ -290,6 +433,16 @@ function setMode(mode) {
         The <strong>⚡ stars/day</strong> velocity shows how fast each project is growing right now.
       </div>`;
     document.getElementById('velPill').style.display = 'flex';
+  } else if (mode === 'kickstarter') {
+    banner.className = 'mode-banner kickstarter';
+    banner.innerHTML = `<span class="mode-icon">🔬</span>
+      <div class="mode-desc">
+        <strong>Show HN — Daily Top 10 Software &amp; Agent Projects</strong>
+        The most-upvoted "Show HN" posts from the last 30 days where developers share new
+        software tools, AI agents, and open-source projects. Ranked by community points.
+        Results are cached daily.
+      </div>`;
+    document.getElementById('velPill').style.display = 'none';
   } else {
     banner.className = 'mode-banner stars';
     banner.innerHTML = `<span class="mode-icon">🏆</span>
@@ -453,7 +606,7 @@ function renderCard(repo, i, mode) {
   const id   = `c${i}`;
   const vel  = velocity(repo);
   const days = Math.round(daysSince(repo.created_at));
-  const topics = (repo.topics||[]).slice(0,5).map(t=>`<span class="topic">${esc(t)}</span>`).join('');
+  const topics = (repo.topics||[]).slice(0,5).map((t,idx)=>`<span class="topic${idx>=2?' hide-m':''}">${esc(t)}</span>`).join('');
   const isNew = days <= 30;
 
   const velBadge = mode === 'trending'
@@ -469,11 +622,11 @@ function renderCard(repo, i, mode) {
       <p class="repo-desc">${esc(repo.description)||'<em style="color:var(--muted)">No description provided.</em>'}</p>
       <div class="meta">
         <span class="mi sc">⭐ ${fmt(repo.stargazers_count)}</span>
-        <span class="mi">🍴 ${fmt(repo.forks_count)}</span>
-        <span class="mi">👁 ${fmt(repo.watchers_count)}</span>
+        <span class="mi hide-m">🍴 ${fmt(repo.forks_count)}</span>
+        <span class="mi hide-m">👁 ${fmt(repo.watchers_count)}</span>
         ${repo.language?`<span class="mi"><span class="lang-dot" style="background:${lc}"></span>${esc(repo.language)}</span>`:''}
         ${isNew?`<span class="new-badge">✨ ${days}d old</span>`:''}
-        <span class="mi">🔄 ${new Date(repo.pushed_at).toLocaleDateString()}</span>
+        <span class="mi hide-m">🔄 ${new Date(repo.pushed_at).toLocaleDateString()}</span>
         ${topics}
       </div>
     </div>
@@ -481,9 +634,9 @@ function renderCard(repo, i, mode) {
   </div>
   <div class="tabs-wrap">
     <div class="tab-bar">
-      <button class="tab on"  onclick="showTab('${id}','intro',this)">📖 Introduction</button>
-      <button class="tab"     onclick="showTab('${id}','biz',this)">💼 Business Use Cases</button>
-      <button class="tab"     onclick="showTab('${id}','stats',this)">📊 Quick Stats</button>
+      <button class="tab on"  onclick="showTab('${id}','intro',this)"  data-short="📖 Intro">📖 Introduction</button>
+      <button class="tab"     onclick="showTab('${id}','biz',this)"    data-short="💼 Use Cases">💼 Business Use Cases</button>
+      <button class="tab"     onclick="showTab('${id}','stats',this)"  data-short="📊 Stats">📊 Quick Stats</button>
     </div>
     <div class="pane on" id="${id}-intro">
       <span class="mini-spin"></span><span class="load-lbl">Generating introduction…</span>
@@ -550,11 +703,176 @@ async function populateIntro(repo, i, mode) {
   if (!el) return;
   await new Promise(r => setTimeout(r, i * 250));
   repo._readme = await fetchReadme(repo.owner?.login, repo.name);
-  el.innerHTML = buildIntro(repo, mode);
+  el.innerHTML = `<div class="intro-text intro-collapse">${buildIntro(repo, mode)}</div>`
+    + `<button class="read-more-btn" onclick="expandIntro(this)">Read more ↓</button>`;
+}
+
+function expandIntro(btn) {
+  const txt = btn.previousElementSibling;
+  txt.classList.toggle('intro-expanded');
+  btn.textContent = txt.classList.contains('intro-expanded') ? 'Show less ↑' : 'Read more ↓';
+}
+
+// ── HN helpers ────────────────────────────────────────────────────────────────
+function hnDomain(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
+}
+function hnAge(ts) {
+  const d = Math.floor((Date.now() - ts * 1000) / 86400000);
+  return d === 0 ? 'today' : d === 1 ? '1d ago' : d + 'd ago';
+}
+function stripHtml(s) {
+  return (s||'').replace(/<p>/gi,' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&#x27;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim();
+}
+
+function renderKSCard(post, i) {
+  const rc      = i===0?'r1':i===1?'r2':i===2?'r3':'';
+  const id      = `ksc${i}`;
+  const hnUrl   = `https://news.ycombinator.com/item?id=${post.objectID}`;
+  const projUrl = post.url || hnUrl;
+  const domain  = hnDomain(post.url || '');
+  const pts     = (post.points || 0).toLocaleString();
+  const cmts    = (post.num_comments || 0).toLocaleString();
+  const age     = hnAge(post.created_at_i);
+  const snippet = stripHtml(post.story_text).substring(0, 280);
+  const biz     = predictBiz({ name: post.title, description: snippet, topics: [] });
+
+  return `
+<div class="card" id="${id}">
+  <div class="card-head">
+    <div class="rank ${rc}">#${i+1}</div>
+    <div class="card-body">
+      <a class="repo-link" href="${projUrl}" target="_blank" rel="noopener">${esc(post.title)}</a>
+      ${domain ? `<p style="font-size:.75rem;color:var(--muted);margin-bottom:4px">🔗 ${esc(domain)}</p>` : ''}
+      <p class="repo-desc">${esc(snippet || 'No description provided.')}</p>
+      <div class="ks-meta">
+        <span class="pct-funded">▲ ${pts} pts</span>
+        <span class="mi">💬 ${cmts} comments</span>
+        <span class="mi hide-m">👤 ${esc(post.author)}</span>
+        <span class="mi hide-m">🕐 ${age}</span>
+        <span class="ks-badge"><a href="${hnUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">HN Discussion ↗</a></span>
+      </div>
+    </div>
+  </div>
+  <div class="tabs-wrap">
+    <div class="tab-bar">
+      <button class="tab on" onclick="showTab('${id}','intro',this)" data-short="📖 Intro">📖 Introduction</button>
+      <button class="tab"    onclick="showTab('${id}','biz',this)"   data-short="💼 Use Cases">💼 Business Use Cases</button>
+      <button class="tab"    onclick="showTab('${id}','stats',this)" data-short="📊 Stats">📊 Quick Stats</button>
+    </div>
+    <div class="pane on" id="${id}-intro">
+      <p><strong>${esc(post.title)}</strong> — shared by <strong>${esc(post.author)}</strong> on Hacker News ${age}.
+      ${snippet ? `<br><br>${esc(snippet)}${snippet.length >= 280 ? '…' : ''}` : ''}</p>
+      <p style="margin-top:10px"><a href="${hnUrl}" target="_blank" rel="noopener" style="color:var(--accent)">Read the full HN discussion ↗</a></p>
+    </div>
+    <div class="pane" id="${id}-biz">
+      <p style="color:var(--muted);font-size:.82rem;margin-bottom:12px">Industries that could leverage this project:</p>
+      <div class="biz-grid">
+        ${biz.map(b=>`<div class="biz-tile">
+          <span class="biz-lbl ${b.tag}">${tagLabel(b.tag)}</span>
+          <h4>${esc(b.name)}</h4><p>${esc(b.desc)}</p>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="pane" id="${id}-stats">
+      <div class="stat-grid">
+        ${sg('▲ Points', pts, '#05d182')}
+        ${sg('💬 Comments', cmts, 'var(--accent)')}
+        ${sg('👤 Author', esc(post.author), 'var(--muted)')}
+        ${sg('🕐 Posted', age, 'var(--yellow)')}
+        ${sg('🔗 Domain', esc(domain||'HN'), 'var(--purple)')}
+        ${sg('🆔 HN ID', post.objectID, 'var(--muted)')}
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+async function fetchKSRepos(forceRefresh = false) {
+  const content    = document.getElementById('content');
+  const statsBar   = document.getElementById('statsBar');
+  const refreshBtn = document.getElementById('refreshBtn');
+
+  const today    = new Date().toISOString().split('T')[0];
+  const cacheKey = `hn_snapshot_${today}`;
+  if (forceRefresh) localStorage.removeItem(cacheKey);
+  const cached   = localStorage.getItem(cacheKey);
+
+  refreshBtn.disabled = true;
+  refreshBtn.textContent = '⏳ Loading…';
+  statsBar.style.display = 'none';
+
+  content.innerHTML = `<div class="loading-wrap">
+    <div class="spinner"></div>
+    <p>Scanning Hacker News "Show HN" posts…</p>
+    <p style="font-size:.8rem;margin-top:6px;color:var(--muted)">Fetching top software &amp; agent projects</p>
+    <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+  </div>`;
+
+  let pct = 0;
+  const timer = setInterval(() => {
+    pct = Math.min(pct + 8, 85);
+    const b = document.getElementById('prog');
+    if (b) b.style.width = pct + '%';
+  }, 100);
+
+  try {
+    let posts;
+    let fromCache = false;
+
+    if (cached) {
+      posts     = JSON.parse(cached);
+      fromCache = true;
+    } else {
+      // Fetch the last 30 days of Show HN posts about software/AI/agents
+      const since = Math.floor((Date.now() - 30 * 86400 * 1000) / 1000);
+      const queries = ['AI+agent+software', 'autonomous+agent', 'LLM+app'];
+      const results = await Promise.all(queries.map(q =>
+        fetch(`https://hn.algolia.com/api/v1/search?tags=show_hn&query=${q}&hitsPerPage=20&numericFilters=created_at_i%3E${since}`)
+          .then(r => r.json()).then(d => d.hits || []).catch(() => [])
+      ));
+      // Deduplicate by objectID, sort by points, take top 10
+      const seen = new Set();
+      posts = results.flat()
+        .filter(h => { if (seen.has(h.objectID)) return false; seen.add(h.objectID); return true; })
+        .sort((a, b) => (b.points || 0) - (a.points || 0))
+        .slice(0, 10);
+      localStorage.setItem(cacheKey, JSON.stringify(posts));
+    }
+
+    clearInterval(timer);
+
+    if (!posts.length) {
+      content.innerHTML = `<div class="err">No Show HN posts found. Try refreshing.</div>`;
+      refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+      return;
+    }
+
+    content.innerHTML = posts.map((p, i) => renderKSCard(p, i)).join('');
+
+    const totalPts = posts.reduce((s, p) => s + (p.points || 0), 0);
+    document.getElementById('fetchTime').textContent = fromCache ? `Cached ${today}` : 'Fetched ' + new Date().toLocaleTimeString();
+    document.getElementById('dateLabel').textContent = `Daily snapshot · ${today}`;
+    document.getElementById('starTotal').textContent = totalPts.toLocaleString() + ' total points';
+    document.getElementById('repoCount').textContent = posts.length + ' Show HN posts';
+    statsBar.style.display = 'flex';
+
+    refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+  } catch (err) {
+    clearInterval(timer);
+    content.innerHTML = `<div class="err">
+      ⚠️ <strong>Failed to load Show HN data</strong><br><br>
+      ${esc(err.message)}<br><br>
+      <a href="#" onclick="fetchKSRepos();return false">Try again</a>.
+    </div>`;
+    refreshBtn.disabled = false; refreshBtn.textContent = '🔄 Refresh';
+  }
 }
 
 // ── Main fetch ────────────────────────────────────────────────────────────────
-async function fetchRepos() {
+async function fetchRepos(forceRefresh = false) {
+  if (currentMode === 'kickstarter') return fetchKSRepos(forceRefresh);
+
   const content    = document.getElementById('content');
   const statsBar   = document.getElementById('statsBar');
   const refreshBtn = document.getElementById('refreshBtn');
